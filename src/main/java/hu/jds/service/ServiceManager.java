@@ -26,19 +26,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The distributed service manager singleton.
+ * A distributed service manager.
  * 
  * <p>
- * Only one manager may exist per JVM. The manager makes it possible to register
- * and lookup local and remote services.
+ * The manager makes it possible to register and lookup local and remote
+ * services.
  * </p>
  * 
  * @author Gergely Kiss
  * @see IServiceManager
- * @see IServiceLocator
  */
 public class ServiceManager implements IServiceManager, IServiceLocator {
-	private static ServiceManager instance;
 	private final Logger log = LoggerFactory.getLogger(ServiceManager.class);
 
 	private int discoveryPort = 4000;
@@ -114,14 +112,6 @@ public class ServiceManager implements IServiceManager, IServiceLocator {
 				ProcessUtils.PID, localAddress, rmiPort });
 	}
 
-	public static ServiceManager instance() {
-		if (instance == null) {
-			instance = new ServiceManager();
-		}
-
-		return instance;
-	}
-
 	public void setDiscoveryPort(int discoveryPort) {
 		this.discoveryPort = discoveryPort;
 	}
@@ -180,7 +170,7 @@ public class ServiceManager implements IServiceManager, IServiceLocator {
 		if (proxy != null) {
 			return (T) proxy.getProxy();
 		} else {
-			throw new ServiceException("No beans were found for service: " + iface);
+			throw new ServiceException("No services were found for interface: " + iface);
 		}
 	}
 

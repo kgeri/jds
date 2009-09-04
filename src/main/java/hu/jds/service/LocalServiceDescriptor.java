@@ -1,6 +1,5 @@
 package hu.jds.service;
 
-import org.springframework.util.Assert;
 
 /**
  * A service descriptor for local services.
@@ -14,8 +13,6 @@ public class LocalServiceDescriptor extends ServiceDescriptor {
 
 	public LocalServiceDescriptor(Class<?> serviceInterface, String serviceName, Object service) {
 		super(serviceInterface, serviceName);
-
-		Assert.isInstanceOf(serviceInterface, service);
 		this.service = service;
 	}
 

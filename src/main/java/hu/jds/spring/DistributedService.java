@@ -7,7 +7,7 @@ import java.lang.annotation.RetentionPolicy;
  * Marks the annotated class or method as distributed.
  * 
  * @author Gergely Kiss
- * @see ServiceLocatorBean
+ * @see LocalServiceDiscoveryBean
  */
 @Retention(RetentionPolicy.RUNTIME)
 public @interface DistributedService {

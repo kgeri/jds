@@ -8,7 +8,7 @@ package hu.jds.service;
  * @author Gergely Kiss
  *
  */
-interface IServiceManager extends IServiceLocator {
+public interface IServiceManager {
 
     /**
      * Returns the descriptors for the services this node can provide.
