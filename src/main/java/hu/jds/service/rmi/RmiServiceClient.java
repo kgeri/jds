@@ -8,10 +8,9 @@ import java.lang.reflect.Method;
 
 import java.rmi.Naming;
 
-
 /**
- * RMI client proxy.
- *
+ * RMI client proxy for invoking service methods over RMI.
+ * 
  * @author Gergely Kiss
  */
 public class RmiServiceClient extends ServiceProxy {

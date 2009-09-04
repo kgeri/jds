@@ -1,21 +1,24 @@
 package hu.jds.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import hu.jds.service.messages.IMessageQueue;
 import hu.jds.service.messages.ListRequest;
-
-import org.apache.log4j.Logger;
 
 /**
  * A thread for finding distributed services on the local network.
  * 
+ * <p>
  * Service listing requests are sent every <code>servicePollTime</code> seconds,
  * but whenever a response is received, the poll time increases (doubled). The
  * current poll time is limited to <code>servicePollTime * 10</code>.
+ * </p>
  * 
  * @author Gergely Kiss
  */
 class ServiceDiscovery extends Thread {
-	private final Logger log = Logger.getLogger(ServiceDiscovery.class);
+	private final Logger log = LoggerFactory.getLogger(ServiceDiscovery.class);
 
 	private final IMessageQueue mq;
 	private int servicePollTime = 5;
@@ -40,11 +43,11 @@ class ServiceDiscovery extends Thread {
 
 				ListRequest req = new ListRequest();
 				mq.push(req);
-				
+
 				for (int i = 0; i < currentServicePollTime; i++) {
 					sleep(1000);
 				}
-				
+
 				if (currentServicePollTime > servicePollTime) {
 					currentServicePollTime /= 2;
 				}
@@ -53,7 +56,7 @@ class ServiceDiscovery extends Thread {
 			log.error(getName() + " interrupted", e);
 		}
 	}
-	
+
 	/**
 	 * Triggers a request send delay whenever a response is received.
 	 */

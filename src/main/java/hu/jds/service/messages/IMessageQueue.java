@@ -1,7 +1,7 @@
 package hu.jds.service.messages;
 
 /**
- * A queue for serializing incoming and outgoing messages.
+ * A simple queue interface for the communication of the nodes.
  * 
  * @author Gergely Kiss
  * 

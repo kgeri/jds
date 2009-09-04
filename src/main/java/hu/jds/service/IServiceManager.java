@@ -22,7 +22,7 @@ interface IServiceManager extends IServiceLocator {
 	 * 
 	 * @param service
 	 */
-    void addLocalService(ServiceDescriptor service);
+	void addLocalService(LocalServiceDescriptor service);
 
 	/**
 	 * Registers the remote service.

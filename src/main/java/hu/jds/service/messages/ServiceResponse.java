@@ -11,8 +11,10 @@ import java.io.ObjectOutputStream;
 /**
  * Service listing response.
  * 
- * @author Gergely Kiss
+ * Response for the {@link ListRequest}.
  * 
+ * @author Gergely Kiss
+ * @see ListRequest
  */
 public class ServiceResponse extends Message {
 	private RemoteServiceDescriptor[] services;
@@ -33,7 +35,7 @@ public class ServiceResponse extends Message {
 		ObjectInputStream ois = new ObjectInputStream(source);
 		services = (RemoteServiceDescriptor[]) ois.readObject();
 	}
-	
+
 	public void setServices(RemoteServiceDescriptor[] services) {
 		this.services = services;
 	}

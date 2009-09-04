@@ -9,10 +9,9 @@ import java.util.Map;
 
 import org.springframework.util.Assert;
 
-
 /**
- * Service messages.
- *
+ * Base class for service messages.
+ * 
  * @author Gergely Kiss
  */
 public abstract class Message {

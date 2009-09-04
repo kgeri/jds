@@ -1,14 +1,13 @@
-package hu.jds.service;
+package hu.jds.spring;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-
 /**
- * Annotation for distributed services.
- *
+ * Marks the annotated class or method as distributed.
+ * 
  * @author Gergely Kiss
- *
+ * @see ServiceLocatorBean
  */
 @Retention(RetentionPolicy.RUNTIME)
 public @interface DistributedService {

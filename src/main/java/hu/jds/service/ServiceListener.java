@@ -7,7 +7,8 @@ import hu.jds.service.messages.ServiceResponse;
 
 import java.net.SocketException;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A thread for listening to service discovery requests.
@@ -15,7 +16,7 @@ import org.apache.log4j.Logger;
  * @author Gergely Kiss
  */
 class ServiceListener extends Thread {
-	private final Logger log = Logger.getLogger(ServiceListener.class);
+	private final Logger log = LoggerFactory.getLogger(ServiceListener.class);
 
 	private final IServiceManager manager;
 	private final IMessageQueue mq;
@@ -56,7 +57,7 @@ class ServiceListener extends Thread {
 
 			if (msg instanceof ListRequest) {
 				RemoteServiceDescriptor[] services = manager.getPublicServices();
-				log.trace(String.format("Sending service response (%d services)", services.length));
+				log.trace("Sending service response ({} services)", services.length);
 
 				ServiceResponse resp = new ServiceResponse();
 				resp.setServices(services);
@@ -65,13 +66,12 @@ class ServiceListener extends Thread {
 			} else if (msg instanceof ServiceResponse) {
 				ServiceResponse resp = (ServiceResponse) msg;
 
-				log.trace(String.format("Received %d remote service descriptors", resp
-						.getServices().length));
+				log.trace("Received {} remote service descriptors", resp.getServices().length);
 
 				for (RemoteServiceDescriptor service : resp.getServices()) {
 					manager.addRemoteService(service);
 				}
-				
+
 				discoverer.responseReceived();
 			}
 		} catch (Exception e) {

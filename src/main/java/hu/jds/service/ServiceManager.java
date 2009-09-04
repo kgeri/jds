@@ -22,29 +22,24 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.BeanInitializationException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.context.ApplicationContext;
-import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.util.ClassUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * A bean for managing distributed services.
+ * The distributed service manager singleton.
+ * 
+ * <p>
+ * Only one manager may exist per JVM. The manager makes it possible to register
+ * and lookup local and remote services.
+ * </p>
  * 
  * @author Gergely Kiss
- * 
+ * @see IServiceManager
+ * @see IServiceLocator
  */
-public class ServiceBean implements IServiceManager, IServiceLocator {
-	private final Logger log = Logger.getLogger(ServiceBean.class);
-
-	@Autowired
-	private ApplicationContext ctx;
+public class ServiceManager implements IServiceManager, IServiceLocator {
+	private static ServiceManager instance;
+	private final Logger log = LoggerFactory.getLogger(ServiceManager.class);
 
 	private int discoveryPort = 4000;
 	private String discoveryGroup = "230.0.0.1";
@@ -73,13 +68,12 @@ public class ServiceBean implements IServiceManager, IServiceLocator {
 	/** The message queue for sending and receiving service messages. */
 	private MulticastMessageQueue mq;
 
-	@PostConstruct
-	public void init() {
+	private ServiceManager() {
 
 		try {
 			localAddress = InetAddress.getLocalHost().getHostAddress();
 		} catch (UnknownHostException e) {
-			throw new BeanInitializationException("Failed to determine local host address: "
+			throw new ServiceException("Failed to determine local host address: "
 					+ e.getLocalizedMessage());
 		}
 
@@ -89,15 +83,16 @@ public class ServiceBean implements IServiceManager, IServiceLocator {
 
 			try {
 				registry = LocateRegistry.createRegistry(port);
-				log.info(String.format("Successfully connected to RMI registry on port %d", port));
+				log.info("Successfully connected to RMI registry on port {}", port);
 
 				break;
 			} catch (RemoteException e) {
 
 				if (e.getCause() instanceof BindException) {
-					log.info(String.format("Port %d reserved, retrying...", port));
+					log.info("Port {} reserved, retrying...", port);
 				} else {
-					log.error(String.format("Failed to bind to port: %d", port), e);
+					log.error("Failed to bind to port: {}", port);
+					log.debug("Failure trace", e);
 				}
 			}
 		}
@@ -105,25 +100,26 @@ public class ServiceBean implements IServiceManager, IServiceLocator {
 		rmiPort = port;
 
 		if (registry == null) {
-			throw new BeanInitializationException("Failed to get RMI registry");
+			throw new ServiceException("Failed to get RMI registry");
 		}
 
 		try {
 			mq = new MulticastMessageQueue(discoveryGroup, discoveryPort);
 			new ServiceListener(this, mq).start();
-
-			findLocalServices();
 		} catch (IOException e) {
-			throw new BeanInitializationException("Failed to create connection", e);
+			throw new ServiceException("Failed to create connection", e);
 		}
 
-		log.info(String.format("Successfully initialized service node [PID:%d][RMI:%s:%d]",
-				ProcessUtils.PID, localAddress, rmiPort));
+		log.info("Successfully initialized service node [PID:{}][RMI:{}:{}]", new Object[] {
+				ProcessUtils.PID, localAddress, rmiPort });
 	}
 
-	@PreDestroy
-	public void destroy() throws IOException {
-		mq.close();
+	public static ServiceManager instance() {
+		if (instance == null) {
+			instance = new ServiceManager();
+		}
+
+		return instance;
 	}
 
 	public void setDiscoveryPort(int discoveryPort) {
@@ -138,43 +134,35 @@ public class ServiceBean implements IServiceManager, IServiceLocator {
 	public void addRemoteService(RemoteServiceDescriptor service) {
 
 		synchronized (remoteServices) {
-				if (remoteServices.containsKey(service)) {
-					return;
-				}
+			if (remoteServices.containsKey(service)) {
+				return;
+			}
 
-				log.debug("Adding remote service: " + service);
+			log.debug("Adding remote service: " + service);
 
-				Object bean = new RmiServiceClient(service);
-				remoteServices.put(service, bean);
-				addService(service, bean);
-				log.info("Remote service added: " + service);
+			Object bean = new RmiServiceClient(service);
+			remoteServices.put(service, bean);
+			addService(service, bean);
+			log.info("Remote service added: " + service);
 		}
 	}
 
 	@Override
-	public void addLocalService(ServiceDescriptor service) {
-		Object bean;
+	public void addLocalService(LocalServiceDescriptor service) {
+		Object bean = ((LocalServiceDescriptor) service).getService();
 
-		if (service instanceof ObjectServiceDescriptor) {
-			bean = ((ObjectServiceDescriptor) service).bean;
-		} else if (service instanceof BeanServiceDescriptor) {
-			bean = ctx.getBean(service.serviceName, service.serviceInterface);
-		} else {
-			throw new IllegalStateException("Invalid local service type: " + service.getClass());
-		}
-		
 		synchronized (localServices) {
 
-				if (localServices.contains(service)) {
-					return;
-				}
+			if (localServices.contains(service)) {
+				return;
+			}
 
-				log.debug("Adding local service: " + service);
+			log.debug("Adding local service: " + service);
 
-				localServices.add(service);
-				publishService(service, bean);
-				addService(service, bean);
-				log.info("Local service added: " + service);
+			localServices.add(service);
+			publishService(service, bean);
+			addService(service, bean);
+			log.info("Local service added: " + service);
 		}
 	}
 
@@ -193,52 +181,6 @@ public class ServiceBean implements IServiceManager, IServiceLocator {
 			return (T) proxy.getProxy();
 		} else {
 			throw new ServiceException("No beans were found for service: " + iface);
-		}
-	}
-
-	/**
-	 * Locates and configures the {@link DistributedService} beans in the
-	 * current bean definition context.
-	 */
-	private void findLocalServices() {
-		BeanDefinitionRegistry bdr = (BeanDefinitionRegistry) ctx;
-		String[] bdNames = bdr.getBeanDefinitionNames();
-
-		for (String bdName : bdNames) {
-			BeanDefinition bd = bdr.getBeanDefinition(bdName);
-
-			try {
-				Class<?> beanType = Class.forName(bd.getBeanClassName());
-				DistributedService svc = AnnotationUtils.findAnnotation(beanType,
-						DistributedService.class);
-
-				if (svc == null) {
-					continue;
-				}
-
-				Class<?>[] ifaces = ClassUtils.getAllInterfacesForClass(beanType);
-
-				if (AnnotationUtils.isAnnotationDeclaredLocally(DistributedService.class, beanType)) {
-
-					// The class itself is annotated, save all interfaces
-					for (Class<?> iface : ifaces) {
-						localServices.add(new ObjectServiceDescriptor(iface, bdName));
-					}
-				} else {
-
-					// Only save annotated interfaces
-					for (Class<?> iface : ifaces) {
-						svc = iface.getAnnotation(DistributedService.class);
-
-						if (svc != null) {
-							addLocalService(new ObjectServiceDescriptor(iface, bdName));
-						}
-					}
-				}
-
-			} catch (ClassNotFoundException e) {
-				log.warn("Unknown bean class: " + bd.getBeanClassName());
-			}
 		}
 	}
 

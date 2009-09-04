@@ -14,7 +14,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @RunWith(SpringJUnit4ClassRunner.class)
 public class ServiceBeanTest {
 	@Autowired
-	ServiceBean svc;
+	ServiceManager svc;
 
 	@Autowired
 	ISharedService mock;
@@ -30,15 +30,15 @@ public class ServiceBeanTest {
 	public void testServiceBean() throws InterruptedException {
 		// Hack: accept packets from localhost
 		NetworkUtils.LocalAddresses.clear();
-		
+
 		// Wait for bean init
 		Thread.sleep(1000);
-		
-		svc.addLocalService(new ObjectServiceDescriptor(ISharedService.class, mock));
+
+		svc.addLocalService(new LocalServiceDescriptor(ISharedService.class, "testService", mock));
 
 		mock.testCall("test");
 		replay(mock);
-		
+
 		svc.getService(ISharedService.class).testCall("test");
 		verify(mock);
 	}

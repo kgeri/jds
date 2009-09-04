@@ -7,7 +7,7 @@
 
 	<context:annotation-config />
 
-	<bean class="hu.jds.service.ServiceBean" />
+	<bean class="hu.jds.service.ServiceManager" />
 	<bean class="org.easymock.EasyMock" factory-method="createMock">
 		<constructor-arg value="hu.jds.service.ISharedService" />
 	</bean>

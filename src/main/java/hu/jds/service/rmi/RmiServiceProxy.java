@@ -6,10 +6,9 @@ import java.lang.reflect.Method;
 
 import java.rmi.Remote;
 
-
 /**
- * RMI service wrapper.
- *
+ * RMI service wrapper for publishing service methods over RMI.
+ * 
  * @author Gergely Kiss
  */
 public class RmiServiceProxy extends ServiceProxy implements Remote {

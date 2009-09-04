@@ -1,11 +1,15 @@
 package hu.jds.service.messages;
 
-
 /**
  * Service listing request.
  * 
- * @author Gergely Kiss
+ * <p>
+ * Instructs the listening nodes to supply information about their published
+ * services.
+ * </p>
  * 
+ * @author Gergely Kiss
+ * @see ServiceResponse
  */
 public class ListRequest extends Message {
 

@@ -8,16 +8,17 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * A message queue for multicast sockets.
+ * A message queue implementation for multicast sockets.
  * 
  * @author Gergely Kiss
  * 
  */
 public class MulticastMessageQueue implements IMessageQueue {
-	private final Logger log = Logger.getLogger(MulticastMessageQueue.class);
+	private final Logger log = LoggerFactory.getLogger(MulticastMessageQueue.class);
 
 	private MulticastSocket socket;
 	private InetAddress group;
