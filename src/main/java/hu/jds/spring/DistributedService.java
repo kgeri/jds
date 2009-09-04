@@ -1,7 +1,9 @@
 package hu.jds.spring;
 
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * Marks the annotated class or method as distributed.
@@ -9,6 +11,7 @@ import java.lang.annotation.RetentionPolicy;
  * @author Gergely Kiss
  * @see LocalServiceDiscoveryBean
  */
+@Target(value = { ElementType.METHOD, ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface DistributedService {
 }

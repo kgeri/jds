@@ -18,5 +18,8 @@ public class LocalServiceDiscoveryBeanTest {
 	public void testLocalServiceDiscovery() {
 		ISharedService service = manager.getService(ISharedService.class);
 		assertNotNull(service);
+
+		IPartialSharedService partialService = manager.getService(IPartialSharedService.class);
+		assertNotNull(partialService);
 	}
 }
