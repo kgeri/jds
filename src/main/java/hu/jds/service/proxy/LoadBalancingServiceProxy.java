@@ -2,7 +2,6 @@ package hu.jds.service.proxy;
 
 import hu.jds.service.ServiceException;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +25,7 @@ public class LoadBalancingServiceProxy extends ServiceProxy {
 
 	public LoadBalancingServiceProxy(Class<?> iface, Object serviceBean) {
 		super(iface);
-		this.serviceBeans.add(serviceBean);
+		addServiceBean(serviceBean);
 	}
 
 	@Override
@@ -40,14 +39,6 @@ public class LoadBalancingServiceProxy extends ServiceProxy {
 			} catch (Throwable e) {
 				log.error("Failed to invoke method {} on bean {}", method.getName(), bean);
 				log.debug("Failure trace", e);
-
-				for (Method m : bean.getClass().getDeclaredMethods()) {
-					System.err.println("METHOD: " + m.getName());
-				}
-
-				for (Field f : bean.getClass().getDeclaredFields()) {
-					System.err.println("FIELD: " + f.getName());
-				}
 			}
 		}
 
