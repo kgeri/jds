@@ -9,7 +9,10 @@
 
 	<bean id="testService" class="hu.jds.common.SharedService" />
 	
-	<bean id="serviceManager" class="hu.jds.service.ServiceManager" />
+	<bean id="serviceManager" class="hu.jds.service.ServiceManager" >
+		<property name="discoveryGroup" value="230.0.0.1" />
+		<property name="discoveryPort" value="4000" />
+	</bean>
 	<bean id="serviceManager2" class="hu.jds.service.ServiceManager" />
 	
 	<bean class="hu.jds.spring.LocalServiceDiscoveryBean" />

@@ -3,15 +3,16 @@ package hu.jds.service;
 import hu.jds.service.messages.MulticastMessageQueue;
 import hu.jds.service.proxy.IServiceProxy;
 import hu.jds.service.proxy.LoadBalancingServiceProxy;
-import hu.jds.service.rmi.RmiServiceClient;
-import hu.jds.service.rmi.RmiServiceProxy;
+import hu.jds.service.rmi.IRemoteService;
+import hu.jds.service.rmi.RemoteClientProxy;
+import hu.jds.service.rmi.RemoteServiceWrapper;
 import hu.jds.service.utils.ProcessUtils;
 
 import java.io.IOException;
 import java.net.BindException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.rmi.Remote;
+import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -49,10 +50,10 @@ public class ServiceManager implements IServiceManager, IServiceLocator {
 	private Set<ServiceDescriptor> localServices = new HashSet<ServiceDescriptor>();
 
 	/** The locally available, published services */
-	private Map<RemoteServiceDescriptor, Remote> publishedServices = new ConcurrentHashMap<RemoteServiceDescriptor, Remote>();
+	private Map<RemoteServiceDescriptor, RemoteServiceWrapper> publishedServices = new ConcurrentHashMap<RemoteServiceDescriptor, RemoteServiceWrapper>();
 
 	/** The discovered remote services. */
-	private Map<RemoteServiceDescriptor, Object> remoteServices = new ConcurrentHashMap<RemoteServiceDescriptor, Object>();
+	private Map<RemoteServiceDescriptor, RemoteClientProxy> remoteServices = new ConcurrentHashMap<RemoteServiceDescriptor, RemoteClientProxy>();
 
 	/** The localhost's address. */
 	private String localAddress;
@@ -132,7 +133,19 @@ public class ServiceManager implements IServiceManager, IServiceLocator {
 
 			log.debug("Adding remote service: " + service);
 
-			RmiServiceClient client = new RmiServiceClient(service);
+			IRemoteService stub = null;
+
+			try {
+				stub = (IRemoteService) Naming.lookup(service.getServiceURL());
+			} catch (Exception e) {
+				log.error("Failed to lookup IRemoteService RMI stub at: {}", service
+						.getServiceURL());
+				log.debug("Failure trace", e);
+				return;
+			}
+
+			RemoteClientProxy client = new RemoteClientProxy(stub, service.serviceInterface);
+
 			remoteServices.put(service, client);
 			addService(service, client.getProxy());
 			log.info("Remote service added: " + service);
@@ -207,20 +220,13 @@ public class ServiceManager implements IServiceManager, IServiceLocator {
 				service.serviceName, localAddress, rmiPort);
 		String name = rsd.getServiceFQN();
 
-		Remote svc;
-
 		try {
+			RemoteServiceWrapper wrapper = new RemoteServiceWrapper(bean, service.serviceInterface);
 
-			if (bean instanceof Remote) {
-				svc = (Remote) bean;
-			} else {
-				svc = (Remote) new RmiServiceProxy(service.serviceInterface, bean).getProxy();
-			}
+			UnicastRemoteObject.exportObject(wrapper, rmiPort);
+			registry.rebind(name, wrapper);
 
-			UnicastRemoteObject.exportObject(svc, rmiPort);
-			registry.rebind(name, (Remote) svc);
-
-			publishedServices.put(rsd, svc);
+			publishedServices.put(rsd, wrapper);
 			log.info("Successfully published service: " + name);
 		} catch (Exception e) {
 			log.error("Failed to publish service: " + name, e);
