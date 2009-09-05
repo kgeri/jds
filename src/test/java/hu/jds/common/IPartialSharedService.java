@@ -1,4 +1,4 @@
-package hu.jds.service;
+package hu.jds.common;
 
 import hu.jds.spring.DistributedService;
 

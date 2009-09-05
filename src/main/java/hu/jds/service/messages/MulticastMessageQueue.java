@@ -20,14 +20,16 @@ import org.slf4j.LoggerFactory;
 public class MulticastMessageQueue implements IMessageQueue {
 	private final Logger log = LoggerFactory.getLogger(MulticastMessageQueue.class);
 
-	private MulticastSocket socket;
-	private InetAddress group;
-	private int port;
+	private final MulticastSocket socket;
+	private final InetAddress group;
+	private final int multicastPort;
+	private final int rmiPort;
 
-	public MulticastMessageQueue(String group, int port) throws IOException {
-		this.port = port;
+	public MulticastMessageQueue(String group, int multicastPort, int rmiPort) throws IOException {
+		this.multicastPort = multicastPort;
+		this.rmiPort = rmiPort;
 		this.group = InetAddress.getByName(group);
-		socket = new MulticastSocket(port);
+		socket = new MulticastSocket(multicastPort);
 		socket.joinGroup(this.group);
 	}
 
@@ -38,22 +40,28 @@ public class MulticastMessageQueue implements IMessageQueue {
 		while (true) {
 			DatagramPacket packet = new DatagramPacket(buf, buf.length);
 			socket.receive(packet);
+			
+			byte[] data = packet.getData();
+			
+			// Determining source RMI port
+			int port = Message.getPort(data);
 
 			// Skipping local packets
 			String address = packet.getAddress().getHostAddress();
-			if (packet.getPort() == port && NetworkUtils.LocalAddresses.contains(address)) {
+			
+			if (port == rmiPort && NetworkUtils.LocalAddresses.contains(address)) {
 				continue;
 			}
 
-			return Message.parseMessage(packet.getData());
+			return Message.parseMessage(data);
 		}
 	}
 
 	@Override
 	public void push(Message message) {
 		try {
-			byte[] buf = message.generate(ProcessUtils.PID);
-			DatagramPacket packet = new DatagramPacket(buf, buf.length, group, port);
+			byte[] buf = message.generate(ProcessUtils.PID, rmiPort);
+			DatagramPacket packet = new DatagramPacket(buf, buf.length, group, multicastPort);
 
 			socket.send(packet);
 		} catch (IOException e) {

@@ -1,5 +1,7 @@
 package hu.jds.spring;
 
+import java.rmi.Remote;
+
 import hu.jds.service.IServiceManager;
 import hu.jds.service.ServiceManager;
 
@@ -52,6 +54,10 @@ public class LocalServiceDiscoveryBean implements BeanFactoryPostProcessor {
 
 					// The class itself is annotated, save all interfaces
 					for (Class<?> iface : ifaces) {
+						if (Remote.class.equals(iface)) {
+							continue;
+						}
+
 						manager.addLocalService(new BeanServiceDescriptor(iface, bdName,
 								beanFactory));
 					}

@@ -3,7 +3,6 @@ package hu.jds.service.rmi;
 import hu.jds.service.proxy.ServiceProxy;
 
 import java.lang.reflect.Method;
-
 import java.rmi.Remote;
 
 /**
@@ -11,11 +10,11 @@ import java.rmi.Remote;
  * 
  * @author Gergely Kiss
  */
-public class RmiServiceProxy extends ServiceProxy implements Remote {
+public class RmiServiceProxy extends ServiceProxy {
     private final Object target;
 
     public RmiServiceProxy(Class<?> iface, Object target) {
-        super(iface);
+		super(iface, Remote.class);
         this.target = target;
     }
 

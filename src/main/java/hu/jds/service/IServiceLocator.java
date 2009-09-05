@@ -8,15 +8,14 @@ package hu.jds.service;
  */
 public interface IServiceLocator {
 
-    /**
-     * Returns a service proxy of the specified interface.
-     *
-     * @param <T>
-     * @param iface
-     *
-     * @return A (possibly load balanced) proxy for the given service interface
-     *
-     * @throws ServiceException if the service can not be found
-     */
+	/**
+	 * Returns a service proxy of the specified interface.
+	 * 
+	 * @param <T>
+	 * @param iface
+	 * 
+	 * @return A (possibly load balanced) proxy for the given service interface,
+	 *         or null if the service can not be found
+	 */
     <T> T getService(Class<T> iface);
 }

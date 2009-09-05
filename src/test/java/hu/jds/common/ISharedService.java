@@ -1,4 +1,4 @@
-package hu.jds.service;
+package hu.jds.common;
 
 public interface ISharedService {
 	void testCall(String value);

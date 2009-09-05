@@ -7,8 +7,8 @@
 
 	<context:annotation-config />
 
-	<bean id="testService" class="hu.jds.service.SharedService" />
-	<bean id="testPartialService" class="hu.jds.service.PartialSharedService" />
+	<bean id="testService" class="hu.jds.common.SharedService" />
+	<bean id="testPartialService" class="hu.jds.common.PartialSharedService" />
 	
 	<bean id="serviceManager" class="hu.jds.service.ServiceManager" />
 	<bean class="hu.jds.spring.LocalServiceDiscoveryBean" />

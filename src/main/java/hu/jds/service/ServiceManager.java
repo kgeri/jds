@@ -15,7 +15,7 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.rmi.server.RemoteStub;
+import java.rmi.server.ExportException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.HashSet;
 import java.util.Map;
@@ -88,6 +88,8 @@ public class ServiceManager implements IServiceManager, IServiceLocator {
 
 				if (e.getCause() instanceof BindException) {
 					log.info("Port {} reserved, retrying...", port);
+				} else if (e instanceof ExportException) {
+					log.info("Port {} reserved by another RMI registry, retrying...", port);
 				} else {
 					log.error("Failed to bind to port: {}", port);
 					log.debug("Failure trace", e);
@@ -102,7 +104,7 @@ public class ServiceManager implements IServiceManager, IServiceLocator {
 		}
 
 		try {
-			mq = new MulticastMessageQueue(discoveryGroup, discoveryPort);
+			mq = new MulticastMessageQueue(discoveryGroup, discoveryPort, rmiPort);
 			new ServiceListener(this, mq).start();
 		} catch (IOException e) {
 			throw new ServiceException("Failed to create connection", e);
@@ -130,9 +132,9 @@ public class ServiceManager implements IServiceManager, IServiceLocator {
 
 			log.debug("Adding remote service: " + service);
 
-			Object bean = new RmiServiceClient(service);
-			remoteServices.put(service, bean);
-			addService(service, bean);
+			RmiServiceClient client = new RmiServiceClient(service);
+			remoteServices.put(service, client);
+			addService(service, client.getProxy());
 			log.info("Remote service added: " + service);
 		}
 	}
@@ -170,8 +172,28 @@ public class ServiceManager implements IServiceManager, IServiceLocator {
 		if (proxy != null) {
 			return (T) proxy.getProxy();
 		} else {
-			throw new ServiceException("No services were found for interface: " + iface);
+			return null;
 		}
+	}
+
+	/**
+	 * Returns the service proxy, or null if the given interface is not proxied.
+	 * 
+	 * @param iface
+	 * @return
+	 */
+	public IServiceProxy getProxy(Class<?> iface) {
+		return services.get(iface);
+	}
+
+	/**
+	 * Unregisters every service.
+	 */
+	public void removeAllServices() {
+		publishedServices.clear();
+		localServices.clear();
+		remoteServices.clear();
+		services.clear();
 	}
 
 	/**
@@ -192,11 +214,11 @@ public class ServiceManager implements IServiceManager, IServiceLocator {
 			if (bean instanceof Remote) {
 				svc = (Remote) bean;
 			} else {
-				svc = new RmiServiceProxy(service.serviceInterface, bean);
+				svc = (Remote) new RmiServiceProxy(service.serviceInterface, bean).getProxy();
 			}
 
 			UnicastRemoteObject.exportObject(svc, rmiPort);
-			registry.rebind(name, RemoteStub.toStub(svc));
+			registry.rebind(name, (Remote) svc);
 
 			publishedServices.put(rsd, svc);
 			log.info("Successfully published service: " + name);
