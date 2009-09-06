@@ -1,4 +1,4 @@
-package org.jds.service;
+package org.jds.core;
 
 
 

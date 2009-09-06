@@ -10,6 +10,6 @@
 	<bean id="testService" class="org.jds.common.SharedService" />
 	<bean id="testPartialService" class="org.jds.common.PartialSharedService" />
 	
-	<bean id="serviceManager" class="org.jds.service.ServiceManager" />
+	<bean id="serviceManager" class="org.jds.core.ServiceManager" />
 	<bean class="org.jds.spring.LocalServiceDiscoveryBean" />
 </beans>

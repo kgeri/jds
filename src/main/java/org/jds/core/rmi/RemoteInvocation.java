@@ -1,4 +1,4 @@
-package org.jds.service.rmi;
+package org.jds.core.rmi;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;

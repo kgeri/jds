@@ -1,4 +1,4 @@
-package org.jds.service.proxy;
+package org.jds.core.proxy;
 
 /**
  * Service facade interface.

@@ -1,4 +1,4 @@
-package org.jds.service.messages;
+package org.jds.core.messages;
 
 
 import java.io.ByteArrayInputStream;
@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import org.jds.service.RemoteServiceDescriptor;
+import org.jds.core.RemoteServiceDescriptor;
 
 /**
  * Service listing response.

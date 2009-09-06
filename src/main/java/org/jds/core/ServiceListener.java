@@ -1,12 +1,12 @@
-package org.jds.service;
+package org.jds.core;
 
 
 import java.net.SocketException;
 
-import org.jds.service.messages.IMessageQueue;
-import org.jds.service.messages.ListRequest;
-import org.jds.service.messages.Message;
-import org.jds.service.messages.ServiceResponse;
+import org.jds.core.messages.IMessageQueue;
+import org.jds.core.messages.ListRequest;
+import org.jds.core.messages.Message;
+import org.jds.core.messages.ServiceResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,4 +1,4 @@
-package org.jds.service;
+package org.jds.core;
 
 
 import java.io.IOException;
@@ -16,13 +16,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.jds.service.messages.MulticastMessageQueue;
-import org.jds.service.proxy.IServiceProxy;
-import org.jds.service.proxy.LoadBalancingServiceProxy;
-import org.jds.service.rmi.IRemoteService;
-import org.jds.service.rmi.RemoteClientProxy;
-import org.jds.service.rmi.RemoteServiceWrapper;
-import org.jds.service.utils.ProcessUtils;
+import org.jds.core.messages.MulticastMessageQueue;
+import org.jds.core.proxy.IServiceProxy;
+import org.jds.core.proxy.LoadBalancingServiceProxy;
+import org.jds.core.rmi.IRemoteService;
+import org.jds.core.rmi.RemoteClientProxy;
+import org.jds.core.rmi.RemoteServiceWrapper;
+import org.jds.core.utils.ProcessUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

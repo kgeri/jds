@@ -1,4 +1,4 @@
-package org.jds.service.rmi;
+package org.jds.core.rmi;
 
 import java.lang.reflect.Method;
 import java.rmi.RemoteException;

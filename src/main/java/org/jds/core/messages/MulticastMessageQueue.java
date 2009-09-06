@@ -1,4 +1,4 @@
-package org.jds.service.messages;
+package org.jds.core.messages;
 
 
 import java.io.IOException;
@@ -6,8 +6,8 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 
-import org.jds.service.utils.NetworkUtils;
-import org.jds.service.utils.ProcessUtils;
+import org.jds.core.utils.NetworkUtils;
+import org.jds.core.utils.ProcessUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

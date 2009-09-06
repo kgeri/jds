@@ -1,6 +1,6 @@
 package org.jds.spring;
 
-import org.jds.service.LocalServiceDescriptor;
+import org.jds.core.LocalServiceDescriptor;
 import org.springframework.beans.factory.BeanFactory;
 
 

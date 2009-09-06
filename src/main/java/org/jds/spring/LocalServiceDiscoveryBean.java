@@ -3,8 +3,8 @@ package org.jds.spring;
 import java.rmi.Remote;
 
 
-import org.jds.service.IServiceManager;
-import org.jds.service.ServiceManager;
+import org.jds.core.IServiceManager;
+import org.jds.core.ServiceManager;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;

@@ -1,4 +1,4 @@
-package org.jds.service.messages;
+package org.jds.core.messages;
 
 /**
  * A simple queue interface for the communication of the nodes.

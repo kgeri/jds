@@ -1,4 +1,4 @@
-package org.jds.service.utils;
+package org.jds.core.utils;
 
 import java.lang.management.ManagementFactory;
 

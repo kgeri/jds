@@ -1,7 +1,7 @@
-package org.jds.service;
+package org.jds.core;
 
-import org.jds.service.messages.IMessageQueue;
-import org.jds.service.messages.ListRequest;
+import org.jds.core.messages.IMessageQueue;
+import org.jds.core.messages.ListRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

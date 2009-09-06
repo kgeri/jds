@@ -1,4 +1,4 @@
-package org.jds.service.messages;
+package org.jds.core.messages;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

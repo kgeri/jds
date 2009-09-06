@@ -2,7 +2,7 @@ package org.jds.spring;
 
 
 import org.jds.common.ISharedService;
-import org.jds.service.ServiceManager;
+import org.jds.core.ServiceManager;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
