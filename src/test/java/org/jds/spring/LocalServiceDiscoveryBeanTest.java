@@ -11,8 +11,6 @@ import org.jds.common.SharedService;
 import org.jds.core.LocalServiceDescriptor;
 import org.jds.core.ServiceManager;
 import org.jds.core.proxy.IServiceProxy;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,35 +31,30 @@ public class LocalServiceDiscoveryBeanTest {
 
 	SharedService localService = new SharedService();
 
-	@Before
-	public void setUp() {
-		manager.addLocalService(new LocalServiceDescriptor(ISharedService.class, "localService",
-				localService));
-	}
-
-	@After
-	public void tearDown() {
-		manager.removeAllServices();
-	}
-
 	@Test
 	public void testLocalServiceDiscovery() {
-		ISharedService service = manager.getService(ISharedService.class);
+		manager.addLocalService(new LocalServiceDescriptor(ISharedService.class, "localService",
+				localService));
+		ISharedService localService = manager.getService(ISharedService.class, "localService");
+		assertNotNull(localService);
+
+		ISharedService service = manager.getService(ISharedService.class, "testService");
 		assertNotNull(service);
 
-		IPartialSharedService partialService = manager.getService(IPartialSharedService.class);
+		IPartialSharedService partialService = manager.getService(IPartialSharedService.class,
+				"testPartialService");
 		assertNotNull(partialService);
 	}
 
 	@Test
 	public void testServiceCall() {
-		ISharedService service = manager.getService(ISharedService.class);
+		ISharedService service = manager.getService(ISharedService.class, "testService");
 		service.testCall("woot");
 	}
 
 	@Test
 	public void testGetProxy() {
-		IServiceProxy proxy = manager.getProxy(ISharedService.class);
+		IServiceProxy proxy = manager.getProxy(ISharedService.class, "testService");
 		assertNotNull(proxy);
 		assertEquals(proxy.getServiceInterface(), ISharedService.class);
 	}
@@ -73,7 +66,7 @@ public class LocalServiceDiscoveryBeanTest {
 		partialSharedService.enabled(false);
 
 		try {
-			ISharedService service = manager.getService(ISharedService.class);
+			ISharedService service = manager.getService(ISharedService.class, "testService");
 			assertNotNull(service);
 			service.testCall("woot");
 			fail("Expected exception");

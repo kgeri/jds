@@ -13,9 +13,12 @@ public interface IServiceLocator {
 	 * 
 	 * @param <T>
 	 * @param iface
+	 *            The service interface
+	 * @param serviceName
+	 *            The name of the service to query
 	 * 
 	 * @return A (possibly load balanced) proxy for the given service interface,
 	 *         or null if the service can not be found
 	 */
-    <T> T getService(Class<T> iface);
+	<T> T getService(Class<T> iface, String serviceName);
 }

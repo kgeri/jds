@@ -27,7 +27,7 @@ public class RemoteServiceTest {
 		ISharedService service = null;
 
 		while (true) {
-			service = manager2.getService(ISharedService.class);
+			service = manager2.getService(ISharedService.class, "testService");
 
 			if (service != null) {
 				break;

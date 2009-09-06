@@ -11,7 +11,7 @@ import java.io.Serializable;
 public abstract class ServiceDescriptor implements Serializable {
 
     /** The interface of the service. */
-    public final Class<?> serviceInterface;
+	public final Class<?> serviceInterface;
 
     /** The name of the service. */
     public final String serviceName;

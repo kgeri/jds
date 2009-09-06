@@ -1,6 +1,5 @@
 package org.jds.core;
 
-
 import java.io.IOException;
 import java.net.BindException;
 import java.net.InetAddress;
@@ -44,7 +43,7 @@ public class ServiceManager implements IServiceManager, IServiceLocator {
 	private String discoveryGroup = "230.0.0.1";
 
 	/** The currently cached services. */
-	private transient Map<Class<?>, IServiceProxy> services = new ConcurrentHashMap<Class<?>, IServiceProxy>();
+	private transient Map<ServiceKey, IServiceProxy> services = new ConcurrentHashMap<ServiceKey, IServiceProxy>();
 
 	/** The locally available services. */
 	private Set<ServiceDescriptor> localServices = new HashSet<ServiceDescriptor>();
@@ -179,8 +178,8 @@ public class ServiceManager implements IServiceManager, IServiceLocator {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T> T getService(Class<T> iface) {
-		IServiceProxy proxy = services.get(iface);
+	public <T> T getService(Class<T> iface, String serviceName) {
+		IServiceProxy proxy = services.get(new ServiceKey(iface, serviceName));
 
 		if (proxy != null) {
 			return (T) proxy.getProxy();
@@ -195,8 +194,8 @@ public class ServiceManager implements IServiceManager, IServiceLocator {
 	 * @param iface
 	 * @return
 	 */
-	public IServiceProxy getProxy(Class<?> iface) {
-		return services.get(iface);
+	public IServiceProxy getProxy(Class<?> iface, String serviceName) {
+		return services.get(new ServiceKey(iface, serviceName));
 	}
 
 	/**
@@ -234,13 +233,56 @@ public class ServiceManager implements IServiceManager, IServiceLocator {
 	}
 
 	private void addService(ServiceDescriptor service, Object bean) {
-		IServiceProxy proxy = services.get(service.serviceInterface);
+		ServiceKey key = new ServiceKey(service.serviceInterface, service.serviceName);
+		IServiceProxy proxy = services.get(key);
 
+		// TODO support other than LoadBalancing
 		if (proxy == null) {
 			proxy = new LoadBalancingServiceProxy(service.serviceInterface, bean);
-			services.put(service.serviceInterface, proxy);
+			services.put(key, proxy);
 		} else {
 			((LoadBalancingServiceProxy) proxy).addServiceBean(bean);
 		}
+	}
+}
+
+class ServiceKey {
+	final String name;
+	final Class<?> iface;
+
+	public ServiceKey(Class<?> iface, String name) {
+		this.iface = iface;
+		this.name = name;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((iface == null) ? 0 : iface.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ServiceKey other = (ServiceKey) obj;
+		if (iface == null) {
+			if (other.iface != null)
+				return false;
+		} else if (!iface.equals(other.iface))
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		return true;
 	}
 }
