@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.jds</groupId>
 	<artifactId>jds</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.1.0-SNAPSHOT</version>
 	<inceptionYear>2009</inceptionYear>
 	<name>JDS</name>
 	<description>Simple distributed RMI service programming model for Java</description>
@@ -17,6 +17,17 @@
 				</configuration>
 			</plugin>
 		</plugins>
+		
+		<!-- Allow Spring test context xmls in src/test/java -->
+		<testResources>
+			<testResource><directory>src/test/resources</directory></testResource>
+			<testResource>
+				<directory>src/test/java</directory>
+				<excludes>
+					<exclude>**/*.java</exclude>
+				</excludes>
+			</testResource>
+		</testResources>
 	</build>
 	<dependencies>
 

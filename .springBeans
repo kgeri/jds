@@ -7,8 +7,8 @@
 	</configSuffixes>
 	<enableImports><![CDATA[false]]></enableImports>
 	<configs>
-		<config>src/test/java/hu/jds/spring/LocalServiceDiscoveryBeanTest-context.xml</config>
-		<config>src/test/java/hu/jds/spring/RemoteServiceTest-context.xml</config>
+		<config>src/test/java/org/jds/spring/LocalServiceDiscoveryBeanTest-context.xml</config>
+		<config>src/test/java/org/jds/spring/RemoteServiceTest-context.xml</config>
 	</configs>
 	<configSets>
 	</configSets>
