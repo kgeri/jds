@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.jds.core.messages.MulticastMessageQueue;
 import org.jds.core.proxy.IServiceProxy;
-import org.jds.core.proxy.LoadBalancingServiceProxy;
+import org.jds.core.proxy.GroupingProxy;
 import org.jds.core.rmi.IRemoteService;
 import org.jds.core.rmi.RemoteClientProxy;
 import org.jds.core.rmi.RemoteServiceWrapper;
@@ -43,10 +43,10 @@ public class ServiceManager implements IServiceManager, IServiceLocator {
 	private String discoveryGroup = "230.0.0.1";
 
 	/** The currently cached services. */
-	private transient Map<ServiceKey, IServiceProxy> services = new ConcurrentHashMap<ServiceKey, IServiceProxy>();
+	private transient Map<ServiceKey, Object> services = new ConcurrentHashMap<ServiceKey, Object>();
 
 	/** The locally available services. */
-	private Set<ServiceDescriptor> localServices = new HashSet<ServiceDescriptor>();
+	private Set<Object> localServices = new HashSet<Object>();
 
 	/** The locally available, published services */
 	private Map<RemoteServiceDescriptor, RemoteServiceWrapper> publishedServices = new ConcurrentHashMap<RemoteServiceDescriptor, RemoteServiceWrapper>();
@@ -157,13 +157,13 @@ public class ServiceManager implements IServiceManager, IServiceLocator {
 
 		synchronized (localServices) {
 
-			if (localServices.contains(service)) {
+			if (localServices.contains(service.getService())) {
 				return;
 			}
 
 			log.debug("Adding local service: " + service);
 
-			localServices.add(service);
+			localServices.add(service.getService());
 			publishService(service, bean);
 			addService(service, bean);
 			log.info("Local service added: " + service);
@@ -179,13 +179,8 @@ public class ServiceManager implements IServiceManager, IServiceLocator {
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T getService(Class<T> iface, String serviceName) {
-		IServiceProxy proxy = services.get(new ServiceKey(iface, serviceName));
-
-		if (proxy != null) {
-			return (T) proxy.getProxy();
-		} else {
-			return null;
-		}
+		Object svc = services.get(new ServiceKey(iface, serviceName));
+		return svc instanceof IServiceProxy ? (T) ((IServiceProxy) svc).getProxy() : (T) svc;
 	}
 
 	/**
@@ -195,7 +190,8 @@ public class ServiceManager implements IServiceManager, IServiceLocator {
 	 * @return
 	 */
 	public IServiceProxy getProxy(Class<?> iface, String serviceName) {
-		return services.get(new ServiceKey(iface, serviceName));
+		Object svc = services.get(new ServiceKey(iface, serviceName));
+		return svc instanceof IServiceProxy ? (IServiceProxy) svc : null;
 	}
 
 	/**
@@ -234,14 +230,18 @@ public class ServiceManager implements IServiceManager, IServiceLocator {
 
 	private void addService(ServiceDescriptor service, Object bean) {
 		ServiceKey key = new ServiceKey(service.serviceInterface, service.serviceName);
-		IServiceProxy proxy = services.get(key);
+		Object svc = services.get(key);
 
-		// TODO support other than LoadBalancing
-		if (proxy == null) {
-			proxy = new LoadBalancingServiceProxy(service.serviceInterface, bean);
-			services.put(key, proxy);
+		if (svc == null) {
+			services.put(key, bean);
 		} else {
-			((LoadBalancingServiceProxy) proxy).addServiceBean(bean);
+			if (svc instanceof GroupingProxy) {
+				((GroupingProxy) svc).addService(bean);
+			} else {
+				GroupingProxy proxy = new GroupingProxy(service.serviceInterface, svc);
+				proxy.addService(bean);
+				services.put(key, proxy);
+			}
 		}
 	}
 }

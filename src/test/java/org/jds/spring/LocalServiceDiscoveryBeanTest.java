@@ -4,6 +4,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
+import javax.annotation.PostConstruct;
+
 import org.jds.common.IPartialSharedService;
 import org.jds.common.ISharedService;
 import org.jds.common.PartialSharedService;
@@ -30,14 +32,18 @@ public class LocalServiceDiscoveryBeanTest {
 	PartialSharedService partialSharedService;
 
 	SharedService localService = new SharedService();
+	SharedService localService2 = new SharedService();
+
+	@PostConstruct
+	public void init() {
+		manager.addLocalService(new LocalServiceDescriptor(ISharedService.class, "testService",
+				localService));
+		manager.addLocalService(new LocalServiceDescriptor(ISharedService.class, "testService",
+				localService2));
+	}
 
 	@Test
 	public void testLocalServiceDiscovery() {
-		manager.addLocalService(new LocalServiceDescriptor(ISharedService.class, "localService",
-				localService));
-		ISharedService localService = manager.getService(ISharedService.class, "localService");
-		assertNotNull(localService);
-
 		ISharedService service = manager.getService(ISharedService.class, "testService");
 		assertNotNull(service);
 
