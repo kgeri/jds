@@ -4,8 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
-import javax.annotation.PostConstruct;
-
 import org.jds.common.IPartialSharedService;
 import org.jds.common.ISharedService;
 import org.jds.common.PartialSharedService;
@@ -13,6 +11,8 @@ import org.jds.common.SharedService;
 import org.jds.core.LocalServiceDescriptor;
 import org.jds.core.ServiceManager;
 import org.jds.core.proxy.IServiceProxy;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,12 +34,17 @@ public class LocalServiceDiscoveryBeanTest {
 	SharedService localService = new SharedService();
 	SharedService localService2 = new SharedService();
 
-	@PostConstruct
-	public void init() {
+	@Before
+	public void setUp() {
 		manager.addLocalService(new LocalServiceDescriptor(ISharedService.class, "testService",
 				localService));
 		manager.addLocalService(new LocalServiceDescriptor(ISharedService.class, "testService",
 				localService2));
+	}
+
+	@After
+	public void tearDown() {
+		manager.removeAllServices();
 	}
 
 	@Test
@@ -68,6 +73,7 @@ public class LocalServiceDiscoveryBeanTest {
 	@Test
 	public void testFailedServiceCall() {
 		localService.enabled(false);
+		localService2.enabled(false);
 		sharedService.enabled(false);
 		partialSharedService.enabled(false);
 
