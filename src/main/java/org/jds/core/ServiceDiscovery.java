@@ -2,6 +2,7 @@ package org.jds.core;
 
 import org.jds.core.messages.IMessageQueue;
 import org.jds.core.messages.ListRequest;
+import org.jds.core.utils.ProcessUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,6 +43,8 @@ class ServiceDiscovery extends Thread {
 				log.trace("Sending request message...");
 
 				ListRequest req = new ListRequest();
+				req.setNodeId(ProcessUtils.PID);
+
 				mq.push(req);
 
 				for (int i = 0; i < currentServicePollTime; i++) {

@@ -1,11 +1,8 @@
 package org.jds.core.messages;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.OutputStream;
 
 /**
  * Base class for service messages.
@@ -13,84 +10,67 @@ import java.util.Map;
  * @author Gergely Kiss
  */
 public abstract class Message {
-	private static final Map<MessageType, Class<? extends Message>> typesMap;
-
-	static {
-		typesMap = new HashMap<MessageType, Class<? extends Message>>();
-		typesMap.put(MessageType.LIST_REQUEST, ListRequest.class);
-		typesMap.put(MessageType.SERVICE_RESPONSE, ServiceResponse.class);
-	}
-
 	private static int messageOrd = 0;
 
-	public static final int MAX_BUFSIZE = 4096;
-
-	/** Message types. */
-	protected enum MessageType {
-		LIST_REQUEST, SERVICE_RESPONSE;
-	}
-
 	public final MessageType type;
-	public int nodeId;
-	public int messageId;
+	private int sourcePort;
+	private int nodeId;
+	private int messageId;
 
 	protected Message(MessageType type) {
 		this.type = type;
 	}
 
-	public byte[] generate(int nodeId, int rmiPort) throws IOException {
-		ByteArrayOutputStream target = new ByteArrayOutputStream(MAX_BUFSIZE);
-
+	/**
+	 * Serializes the given message to the specified output stream.
+	 * 
+	 * @param rmiPort
+	 * @param msg
+	 * @param target
+	 * 
+	 * @throws IOException
+	 */
+	public static void generateMessage(Message msg, OutputStream target)
+			throws IOException {
 		// Message type
-		target.write((byte) type.ordinal());
+		target.write((byte) msg.type.ordinal());
 
 		// Source port
-		intToByte(target, rmiPort);
+		intToByte(target, msg.sourcePort);
 
 		// Node ID
-		intToByte(target, nodeId);
+		intToByte(target, msg.nodeId);
 
 		// Message ID
 		intToByte(target, messageOrd++);
 
 		// Custom contents
-		generateCustomContent(target);
-
-		byte[] msg = target.toByteArray();
-		assert (msg.length <= MAX_BUFSIZE);
-
-		return msg;
+		msg.generateCustomContent(target);
 	}
 
-	public void parse(byte[] msg) throws IOException, ClassNotFoundException {
-		ByteArrayInputStream source = new ByteArrayInputStream(msg);
-
-		// Skip final message type
-		source.read();
+	/**
+	 * Parses a message from the specified input stream.
+	 * 
+	 * @param source
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	public static Message parseMessage(InputStream source) throws Exception {
+		MessageType type = MessageType.values()[source.read()];
+		Message ret = type.javaType.newInstance();
 
 		// Skip port
-		byteToInt(source);
+		ret.sourcePort = byteToInt(source);
 
 		// Node ID
-		nodeId = byteToInt(source);
+		ret.nodeId = byteToInt(source);
 
 		// Message ID
-		messageId = byteToInt(source);
+		ret.messageId = byteToInt(source);
 
 		// Custom contents
-		parseCustomContent(source);
-	}
-
-	public static int getPort(byte[] data) {
-		return byteToInt(data, 1);
-	}
-
-	public static Message parseMessage(byte[] msg) throws Exception {
-		MessageType type = MessageType.values()[msg[0]];
-		Class<? extends Message> clss = typesMap.get(type);
-
-		Message ret = clss.newInstance();
-		ret.parse(msg);
+		ret.parseCustomContent(source);
 
 		return ret;
 	}
@@ -99,9 +79,10 @@ public abstract class Message {
 	 * Implementation specific content formatting.
 	 * 
 	 * @param target
+	 * 
 	 * @throws IOException
 	 */
-	protected void generateCustomContent(ByteArrayOutputStream target) throws IOException {
+	protected void generateCustomContent(OutputStream target) throws IOException {
 	}
 
 	/**
@@ -112,7 +93,7 @@ public abstract class Message {
 	 * @throws ClassNotFoundException
 	 * @throws IOException
 	 */
-	protected void parseCustomContent(ByteArrayInputStream source) throws IOException,
+	protected void parseCustomContent(InputStream source) throws IOException,
 			ClassNotFoundException {
 	}
 
@@ -121,7 +102,7 @@ public abstract class Message {
 		return nodeId + " - " + type + "#" + messageId;
 	}
 
-	protected static void intToByte(ByteArrayOutputStream target, int i) {
+	protected static void intToByte(OutputStream target, int i) throws IOException {
 		byte[] b = new byte[4];
 
 		b[0] = (byte) (0xFF & ((i >> 24) - 128));
@@ -153,5 +134,25 @@ public abstract class Message {
 		ret += (buf[3 + offset] + 128);
 
 		return ret;
+	}
+
+	public int getNodeId() {
+		return nodeId;
+	}
+
+	public void setNodeId(int nodeId) {
+		this.nodeId = nodeId;
+	}
+
+	public int getMessageId() {
+		return messageId;
+	}
+
+	public int getSourcePort() {
+		return sourcePort;
+	}
+
+	public void setSourcePort(int sourcePort) {
+		this.sourcePort = sourcePort;
 	}
 }

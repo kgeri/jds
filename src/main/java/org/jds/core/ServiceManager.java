@@ -39,7 +39,10 @@ import org.slf4j.LoggerFactory;
 public class ServiceManager implements IServiceManager, IServiceLocator {
 	private final Logger log = LoggerFactory.getLogger(ServiceManager.class);
 
+	/** The port for dynamic service discovery. */
 	private int discoveryPort = 4000;
+
+	/** The multicast group for service discovery. */
 	private String discoveryGroup = "230.0.0.1";
 
 	/** The currently cached services. */

@@ -1,11 +1,10 @@
 package org.jds.core.messages;
 
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 
 import org.jds.core.RemoteServiceDescriptor;
 
@@ -25,13 +24,13 @@ public class ServiceResponse extends Message {
 	}
 
 	@Override
-	protected void generateCustomContent(ByteArrayOutputStream target) throws IOException {
+	protected void generateCustomContent(OutputStream target) throws IOException {
 		ObjectOutputStream oos = new ObjectOutputStream(target);
 		oos.writeObject(services);
 	}
 
 	@Override
-	protected void parseCustomContent(ByteArrayInputStream source) throws IOException,
+	protected void parseCustomContent(InputStream source) throws IOException,
 			ClassNotFoundException {
 		ObjectInputStream ois = new ObjectInputStream(source);
 		services = (RemoteServiceDescriptor[]) ois.readObject();
