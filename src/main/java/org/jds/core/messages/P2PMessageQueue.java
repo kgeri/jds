@@ -37,7 +37,7 @@ public class P2PMessageQueue implements IMessageQueue {
 	}
 
 	@Override
-	public Message pop() throws Exception {
+	public Message pop() throws IOException {
 		while (true) {
 			Socket client = null;
 
@@ -49,15 +49,14 @@ public class P2PMessageQueue implements IMessageQueue {
 				// Skipping local packets
 				String address = client.getInetAddress().getHostAddress();
 
-				if (msg.getSourcePort() == port && NetworkUtils.LocalAddresses.contains(address)) {
+				if (msg.getSourcePort() == port
+						&& NetworkUtils.getLocalAddresses().contains(address)) {
 					continue;
 				}
 
 				return msg;
 			} finally {
-				if (client != null) {
-					client.close();
-				}
+				NetworkUtils.close(client);
 			}
 		}
 	}

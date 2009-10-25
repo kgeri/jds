@@ -1,6 +1,5 @@
 package org.jds.core;
 
-
 import java.net.SocketException;
 
 import org.jds.core.messages.IMessageQueue;
@@ -52,32 +51,27 @@ class ServiceListener extends Thread {
 	}
 
 	private void handle(Message msg) {
+		log.debug("Received: " + msg);
 
-		try {
-			log.debug("Received: " + msg);
+		if (msg instanceof ListRequest) {
+			RemoteServiceDescriptor[] services = manager.getPublicServices();
+			log.trace("Sending service response ({} services)", services.length);
 
-			if (msg instanceof ListRequest) {
-				RemoteServiceDescriptor[] services = manager.getPublicServices();
-				log.trace("Sending service response ({} services)", services.length);
+			ServiceResponse resp = new ServiceResponse();
+			resp.setNodeId(ProcessUtils.PID);
+			resp.setServices(services);
 
-				ServiceResponse resp = new ServiceResponse();
-				resp.setNodeId(ProcessUtils.PID);
-				resp.setServices(services);
+			mq.push(resp);
+		} else if (msg instanceof ServiceResponse) {
+			ServiceResponse resp = (ServiceResponse) msg;
 
-				mq.push(resp);
-			} else if (msg instanceof ServiceResponse) {
-				ServiceResponse resp = (ServiceResponse) msg;
+			log.trace("Received {} remote service descriptors", resp.getServices().length);
 
-				log.trace("Received {} remote service descriptors", resp.getServices().length);
-
-				for (RemoteServiceDescriptor service : resp.getServices()) {
-					manager.addRemoteService(service);
-				}
-
-				discoverer.responseReceived();
+			for (RemoteServiceDescriptor service : resp.getServices()) {
+				manager.addRemoteService(service);
 			}
-		} catch (Exception e) {
-			log.error("Failed to handle message: " + msg, e);
+
+			discoverer.responseReceived();
 		}
 	}
 }

@@ -12,6 +12,11 @@ import java.io.OutputStream;
 public abstract class Message {
 	private static int messageOrd = 0;
 
+	/**
+	 * The unique type of the message.
+	 * 
+	 * @see MessageType
+	 */
 	public final MessageType type;
 	private int sourcePort;
 	private int nodeId;
@@ -54,11 +59,17 @@ public abstract class Message {
 	 * @param source
 	 * 
 	 * @return
-	 * @throws Exception
+	 * @throws IOException
 	 */
-	public static Message parseMessage(InputStream source) throws Exception {
+	public static Message parseMessage(InputStream source) throws IOException {
 		MessageType type = MessageType.values()[source.read()];
-		Message ret = type.javaType.newInstance();
+		Message ret;
+
+		try {
+			ret = type.javaType.newInstance();
+		} catch (Exception e) {
+			throw new IOException("Failed to instantiate message type: " + type.javaType, e);
+		}
 
 		// Skip port
 		ret.sourcePort = byteToInt(source);
@@ -93,8 +104,7 @@ public abstract class Message {
 	 * @throws ClassNotFoundException
 	 * @throws IOException
 	 */
-	protected void parseCustomContent(InputStream source) throws IOException,
-			ClassNotFoundException {
+	protected void parseCustomContent(InputStream source) throws IOException {
 	}
 
 	@Override

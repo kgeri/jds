@@ -1,6 +1,5 @@
 package org.jds.core.messages;
 
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -32,25 +31,29 @@ public class MulticastMessageQueue implements IMessageQueue {
 		this.rmiPort = rmiPort;
 		this.group = InetAddress.getByName(group);
 		socket = new MulticastSocket(multicastPort);
+		socket.setReceiveBufferSize(MAX_BUFSIZE);
+		socket.setLoopbackMode(true);
+		socket.setTrafficClass(0x04);
 		socket.joinGroup(this.group);
 	}
 
 	@Override
-	public Message pop() throws Exception {
+	public Message pop() throws IOException {
 		byte[] buf = new byte[MAX_BUFSIZE];
 
 		while (true) {
 			DatagramPacket packet = new DatagramPacket(buf, buf.length);
 			socket.receive(packet);
-			
+
 			byte[] data = packet.getData();
-			
+
 			Message msg = Message.parseMessage(new ByteArrayInputStream(data));
 
 			// Skipping local packets
-			String address = packet.getAddress().getHostAddress();
-			
-			if (msg.getSourcePort() == rmiPort && NetworkUtils.LocalAddresses.contains(address)) {
+			InetAddress address = packet.getAddress();
+
+			if (msg.getSourcePort() == rmiPort
+					&& NetworkUtils.getLocalAddresses().contains(address)) {
 				continue;
 			}
 

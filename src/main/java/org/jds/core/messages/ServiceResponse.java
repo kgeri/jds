@@ -30,10 +30,13 @@ public class ServiceResponse extends Message {
 	}
 
 	@Override
-	protected void parseCustomContent(InputStream source) throws IOException,
-			ClassNotFoundException {
-		ObjectInputStream ois = new ObjectInputStream(source);
-		services = (RemoteServiceDescriptor[]) ois.readObject();
+	protected void parseCustomContent(InputStream source) throws IOException {
+		try {
+			ObjectInputStream ois = new ObjectInputStream(source);
+			services = (RemoteServiceDescriptor[]) ois.readObject();
+		} catch (ClassNotFoundException e) {
+			throw new IOException(e);
+		}
 	}
 
 	public void setServices(RemoteServiceDescriptor[] services) {

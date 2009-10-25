@@ -1,5 +1,7 @@
 package org.jds.core.messages;
 
+import java.io.IOException;
+
 /**
  * A simple queue interface for the communication of the nodes.
  * 
@@ -7,7 +9,7 @@ package org.jds.core.messages;
  * 
  */
 public interface IMessageQueue {
-	
+
 	/**
 	 * Pushes a new message in the queue.
 	 * 
@@ -18,9 +20,12 @@ public interface IMessageQueue {
 	/**
 	 * Reads the next message from the queue.
 	 * 
-	 * This method blocks until the next message is received.
+	 * This method blocks until the next (valid) message is received.
 	 * 
-	 * @return The received message, or an exception if an error has occurred
+	 * @return The received message
+	 * 
+	 * @throws IOException
+	 *             If the queue failed to read a message
 	 */
-	Message pop() throws Exception;
+	Message pop() throws IOException;
 }
