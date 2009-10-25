@@ -14,8 +14,11 @@ public interface IMessageQueue {
 	 * Pushes a new message in the queue.
 	 * 
 	 * @param message
+	 * 
+	 * @throws IOException
+	 *             If the queue failed to send the message
 	 */
-	void push(Message message);
+	void push(Message message) throws IOException;
 
 	/**
 	 * Reads the next message from the queue.

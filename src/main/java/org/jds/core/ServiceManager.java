@@ -39,8 +39,11 @@ import org.slf4j.LoggerFactory;
 public class ServiceManager implements IServiceManager, IServiceLocator {
 	private final Logger log = LoggerFactory.getLogger(ServiceManager.class);
 
-	/** The port for dynamic service discovery. */
-	private int discoveryPort = 4000;
+	/** The port range start for dynamic service discovery. */
+	private int discoveryPortFrom = 4000;
+
+	/** The port range end for dynamic service discovery. */
+	private int discoveryPortTo = 5000;
 
 	/** The multicast group for service discovery. */
 	private String discoveryGroup = "230.0.0.1";
@@ -107,7 +110,7 @@ public class ServiceManager implements IServiceManager, IServiceLocator {
 		}
 
 		try {
-			mq = new MulticastMessageQueue(discoveryGroup, discoveryPort, rmiPort);
+			mq = new MulticastMessageQueue(discoveryGroup, discoveryPortFrom, discoveryPortTo);
 			new ServiceListener(this, mq).start();
 		} catch (IOException e) {
 			throw new ServiceException("Failed to create connection", e);
@@ -115,14 +118,6 @@ public class ServiceManager implements IServiceManager, IServiceLocator {
 
 		log.info("Successfully initialized service node [PID:{}][RMI:{}:{}]", new Object[] {
 				ProcessUtils.PID, localAddress, rmiPort });
-	}
-
-	public void setDiscoveryPort(int discoveryPort) {
-		this.discoveryPort = discoveryPort;
-	}
-
-	public void setDiscoveryGroup(String discoveryGroup) {
-		this.discoveryGroup = discoveryGroup;
 	}
 
 	@Override
@@ -246,6 +241,18 @@ public class ServiceManager implements IServiceManager, IServiceLocator {
 				services.put(key, proxy);
 			}
 		}
+	}
+
+	public void setDiscoveryGroup(String discoveryGroup) {
+		this.discoveryGroup = discoveryGroup;
+	}
+
+	public void setDiscoveryPortFrom(int discoveryPortFrom) {
+		this.discoveryPortFrom = discoveryPortFrom;
+	}
+
+	public void setDiscoveryPortTo(int discoveryPortTo) {
+		this.discoveryPortTo = discoveryPortTo;
 	}
 }
 

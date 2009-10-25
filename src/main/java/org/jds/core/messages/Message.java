@@ -10,17 +10,33 @@ import java.io.OutputStream;
  * @author Gergely Kiss
  */
 public abstract class Message {
-	private static int messageOrd = 0;
-
 	/**
 	 * The unique type of the message.
 	 * 
 	 * @see MessageType
 	 */
 	public final MessageType type;
-	private int sourcePort;
-	private int nodeId;
-	private int messageId;
+
+	/**
+	 * The PID of the process from which this message was originated.
+	 * 
+	 * <p>
+	 * Makes it possible to differentiate between messages received from
+	 * different JVMs.
+	 * </p>
+	 */
+	private int processId;
+
+	/**
+	 * The queue serial number from which this message was originated.
+	 * 
+	 * <p>
+	 * Makes it possible to differentiate between messages received from queues
+	 * in the same JVM.
+	 * </p>
+	 */
+	private int queueId;
+
 
 	protected Message(MessageType type) {
 		this.type = type;
@@ -40,14 +56,11 @@ public abstract class Message {
 		// Message type
 		target.write((byte) msg.type.ordinal());
 
-		// Source port
-		intToByte(target, msg.sourcePort);
+		// PID
+		intToByte(target, msg.processId);
 
-		// Node ID
-		intToByte(target, msg.nodeId);
-
-		// Message ID
-		intToByte(target, messageOrd++);
+		// Queue ID
+		intToByte(target, msg.queueId);
 
 		// Custom contents
 		msg.generateCustomContent(target);
@@ -71,14 +84,11 @@ public abstract class Message {
 			throw new IOException("Failed to instantiate message type: " + type.javaType, e);
 		}
 
-		// Skip port
-		ret.sourcePort = byteToInt(source);
+		// PID
+		ret.processId = byteToInt(source);
 
-		// Node ID
-		ret.nodeId = byteToInt(source);
-
-		// Message ID
-		ret.messageId = byteToInt(source);
+		// Queue ID
+		ret.queueId = byteToInt(source);
 
 		// Custom contents
 		ret.parseCustomContent(source);
@@ -109,7 +119,8 @@ public abstract class Message {
 
 	@Override
 	public String toString() {
-		return nodeId + " - " + type + "#" + messageId;
+		return new StringBuilder().append(processId).append("-").append(queueId).append(" ")
+				.append(type).toString();
 	}
 
 	protected static void intToByte(OutputStream target, int i) throws IOException {
@@ -146,23 +157,19 @@ public abstract class Message {
 		return ret;
 	}
 
-	public int getNodeId() {
-		return nodeId;
+	public int getProcessId() {
+		return processId;
 	}
 
-	public void setNodeId(int nodeId) {
-		this.nodeId = nodeId;
+	public void setProcessId(int processId) {
+		this.processId = processId;
 	}
 
-	public int getMessageId() {
-		return messageId;
+	public int getQueueId() {
+		return queueId;
 	}
 
-	public int getSourcePort() {
-		return sourcePort;
-	}
-
-	public void setSourcePort(int sourcePort) {
-		this.sourcePort = sourcePort;
+	public void setQueueId(int queueId) {
+		this.queueId = queueId;
 	}
 }

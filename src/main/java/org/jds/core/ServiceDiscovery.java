@@ -1,8 +1,9 @@
 package org.jds.core;
 
+import java.io.IOException;
+
 import org.jds.core.messages.IMessageQueue;
 import org.jds.core.messages.ListRequest;
-import org.jds.core.utils.ProcessUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,17 +43,19 @@ class ServiceDiscovery extends Thread {
 			while (true) {
 				log.trace("Sending request message...");
 
-				ListRequest req = new ListRequest();
-				req.setNodeId(ProcessUtils.PID);
+				try {
+					ListRequest req = new ListRequest();
+					mq.push(req);
 
-				mq.push(req);
+					for (int i = 0; i < currentServicePollTime; i++) {
+						sleep(1000);
+					}
 
-				for (int i = 0; i < currentServicePollTime; i++) {
-					sleep(1000);
-				}
-
-				if (currentServicePollTime > servicePollTime) {
-					currentServicePollTime /= 2;
+					if (currentServicePollTime > servicePollTime) {
+						currentServicePollTime /= 2;
+					}
+				} catch (IOException e) {
+					log.error("Failed to send request message", e);
 				}
 			}
 		} catch (InterruptedException e) {

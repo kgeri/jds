@@ -1,12 +1,12 @@
 package org.jds.core;
 
+import java.io.IOException;
 import java.net.SocketException;
 
 import org.jds.core.messages.IMessageQueue;
 import org.jds.core.messages.ListRequest;
 import org.jds.core.messages.Message;
 import org.jds.core.messages.ServiceResponse;
-import org.jds.core.utils.ProcessUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,7 +50,7 @@ class ServiceListener extends Thread {
 		}
 	}
 
-	private void handle(Message msg) {
+	private void handle(Message msg) throws IOException {
 		log.debug("Received: " + msg);
 
 		if (msg instanceof ListRequest) {
@@ -58,7 +58,6 @@ class ServiceListener extends Thread {
 			log.trace("Sending service response ({} services)", services.length);
 
 			ServiceResponse resp = new ServiceResponse();
-			resp.setNodeId(ProcessUtils.PID);
 			resp.setServices(services);
 
 			mq.push(resp);

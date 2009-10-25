@@ -1,6 +1,7 @@
 package org.jds.core.messages;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
@@ -14,7 +15,7 @@ import org.slf4j.LoggerFactory;
  * 
  * @author Gergely Kiss
  */
-public class P2PMessageQueue implements IMessageQueue {
+public class P2PMessageQueue extends AbstractNodeMessageQueue {
 	private static final Logger log = LoggerFactory.getLogger(P2PMessageQueue.class);
 
 	private ServerSocket socket;
@@ -34,6 +35,8 @@ public class P2PMessageQueue implements IMessageQueue {
 			throw new SocketException("Failed to create server socket in port range: "
 					+ portRangeFrom + "-" + portRangeTo);
 		}
+
+		log.info("Connected P2PMessageQueue at {}:{}", socket, port);
 	}
 
 	@Override
@@ -47,10 +50,9 @@ public class P2PMessageQueue implements IMessageQueue {
 				Message msg = Message.parseMessage(client.getInputStream());
 
 				// Skipping local packets
-				String address = client.getInetAddress().getHostAddress();
+				InetAddress address = client.getInetAddress();
 
-				if (msg.getSourcePort() == port
-						&& NetworkUtils.getLocalAddresses().contains(address)) {
+				if (isLocalMessage(msg, address)) {
 					continue;
 				}
 
