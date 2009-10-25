@@ -1,5 +1,6 @@
 package org.jds.spring;
 
+import static org.junit.Assert.assertNotNull;
 
 import org.jds.common.ISharedService;
 import org.jds.core.ServiceManager;
@@ -21,12 +22,13 @@ public class RemoteServiceTest {
 	@Qualifier("serviceManager2")
 	ServiceManager manager2;
 
-	@Test(timeout = 1000)
+	@Test
 	public void testAcquireRemoteService() throws InterruptedException {
 		// Waiting for node discovery
 		ISharedService service = null;
 
-		while (true) {
+		for (int i = 0; i < 10; i++) {
+
 			service = manager2.getService(ISharedService.class, "testService");
 
 			if (service != null) {
@@ -37,6 +39,7 @@ public class RemoteServiceTest {
 			Thread.sleep(500);
 		}
 
+		assertNotNull("Failed to acquire service in 10 attempts", service);
 		service.testCall("woot");
 	}
 }
