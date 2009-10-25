@@ -21,7 +21,7 @@ public class RemoteServiceTest {
 	@Qualifier("serviceManager2")
 	ServiceManager manager2;
 
-	@Test(timeout = 0)
+	@Test(timeout = 1000)
 	public void testAcquireRemoteService() throws InterruptedException {
 		// Waiting for node discovery
 		ISharedService service = null;
